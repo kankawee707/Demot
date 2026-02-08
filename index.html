@@ -3,35 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Probability Monopoly Quest</title>
+    <title>เกมเศรษฐีความน่าจะเป็น</title>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;500&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #2c3e50; --success: #27ae60; --danger: #e74c3c; --warning: #f1c40f; --dark: #1a252f; }
-        body { font-family: 'Kanit', sans-serif; background: var(--dark); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: #333; }
+        body { font-family: 'Kanit', sans-serif; background: var(--dark); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        #game-card { background: white; width: 92%; max-width: 480px; padding: 25px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; position: relative; min-height: 400px; }
+        .header-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .money-badge { background: var(--warning); padding: 8px 20px; border-radius: 50px; font-weight: bold; font-size: 1.3rem; box-shadow: 0 4px 0 #d4ac0d; }
+        .q-counter { font-size: 1rem; color: #7f8c8d; }
+        #q-text { font-size: 1.2rem; margin-bottom: 25px; min-height: 60px; line-height: 1.5; color: var(--primary); font-weight: 500; text-align: left; }
+        .option-btn { display: block; width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #eee; border-radius: 12px; background: white; cursor: pointer; transition: 0.2s; font-family: 'Kanit'; font-size: 1.1rem; text-align: left; }
+        .option-btn:hover { border-color: var(--primary); background: #f9f9f9; transform: scale(1.02); }
+        .btn-finish { background: #f8f9fa; border: 1px solid #ddd; color: #e74c3c; padding: 10px 20px; border-radius: 10px; cursor: pointer; margin-top: 20px; font-family: 'Kanit'; width: 100%; }
         
-        #game-card { background: white; width: 92%; max-width: 480px; padding: 25px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; position: relative; }
+        /* หน้าคั่น (Overlay) แสดงผลการตอบ */
+        #overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.98); border-radius: 25px; justify-content: center; align-items: center; flex-direction: column; z-index: 10; padding: 30px; box-sizing: border-box; }
+        .exp-box { background: #fff5f5; border-left: 5px solid var(--danger); padding: 15px; margin: 20px 0; border-radius: 8px; text-align: left; width: 100%; }
+        .next-btn { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; cursor: pointer; font-size: 1.2rem; width: 100%; font-family: 'Kanit'; }
         
-        .header-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .money-badge { background: var(--warning); padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 1.2rem; box-shadow: 0 4px 0 #d4ac0d; }
-        .q-counter { font-size: 0.9rem; color: #7f8c8d; }
-
-        #q-text { font-size: 1.15rem; margin-bottom: 20px; min-height: 60px; line-height: 1.5; color: var(--primary); font-weight: 500; }
-        
-        .option-btn { display: block; width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #eee; border-radius: 12px; background: white; cursor: pointer; transition: 0.2s; font-family: 'Kanit'; font-size: 1rem; }
-        .option-btn:hover { border-color: var(--primary); background: #f9f9f9; transform: translateY(-2px); }
-
-        .end-game-btn { background: none; border: none; color: #e74c3c; text-decoration: underline; cursor: pointer; font-size: 0.85rem; margin-top: 15px; font-family: 'Kanit'; opacity: 0.7; }
-        .end-game-btn:hover { opacity: 1; }
-
-        /* Overlay & Explanation */
-        #overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.98); border-radius: 25px; justify-content: center; align-items: center; flex-direction: column; z-index: 10; padding: 20px; box-sizing: border-box; }
-        .explanation-box { background: #fdf2f2; border-left: 5px solid var(--danger); padding: 15px; margin: 15px 0; border-radius: 8px; text-align: left; font-size: 0.9rem; }
-        .next-btn { background: var(--primary); color: white; border: none; padding: 12px 35px; border-radius: 10px; cursor: pointer; font-size: 1.1rem; font-family: 'Kanit'; }
-
-        /* Result Screen */
-        #result-screen { display: none; }
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0; }
-        .stat-item { padding: 15px; border-radius: 15px; background: #f8f9fa; }
+        #result-screen { display: none; padding: 20px; }
     </style>
 </head>
 <body>
@@ -40,63 +31,56 @@
     <div id="quiz-screen">
         <div class="header-info">
             <span class="q-counter">ข้อที่: <span id="current-num">1</span>/40</span>
-            <div class="money-badge">💰 <span id="balance">0</span></div>
+            <div class="money-badge">💰 <span id="balance">0</span> ฿</div>
         </div>
-        <small id="q-category" style="color:#95a5a6; display:block; margin-bottom:5px;"></small>
-        <div id="q-text">ดาวน์โหลดคำถามจากระบบ...</div>
+        <div id="q-text">กำลังสุ่มโจทย์...</div>
         <div id="options-container"></div>
-        <button class="end-game-btn" onclick="finishGame()">ต้องการหยุดและสรุปคะแนนตอนนี้</button>
+        <button class="btn-finish" onclick="finishGame()">🏁 จบเกมตอนนี้</button>
     </div>
 
     <div id="overlay">
-        <h1 id="status-icon" style="font-size:3.5rem; margin:0;"></h1>
-        <h2 id="status-title" style="margin:5px 0;"></h2>
-        <div id="status-desc"></div>
-        <div id="explanation-area" class="explanation-box" style="display:none;">
-            <strong>💡 วิเคราะห์โจทย์:</strong> <span id="q-explanation"></span>
+        <h1 id="status-icon" style="font-size:4rem; margin:0;"></h1>
+        <h2 id="status-title" style="margin:10px 0;"></h2>
+        <h3 id="money-info" style="color: var(--success); margin: 0;"></h3>
+        <div id="explanation-area" class="exp-box">
+            <strong>💡 คำอธิบาย:</strong> <br>
+            <span id="q-explanation"></span>
         </div>
-        <button id="main-action-btn" class="next-btn" onclick="nextQuestion()">ไปต่อ ➔</button>
+        <button class="next-btn" onclick="nextQuestion()">ไปข้อถัดไป ➔</button>
     </div>
 
     <div id="result-screen">
-        <h1 style="margin:0;">🏁 จบการเดินหมาก</h1>
-        <div class="stat-grid">
-            <div class="stat-item">
-                <small>เงินรางวัลรวม</small>
-                <div style="font-size:1.5rem; color:var(--success); font-weight:bold;"><span id="final-money">0</span> ฿</div>
-            </div>
-            <div class="stat-item">
-                <small>ตอบถูกทั้งหมด</small>
-                <div style="font-size:1.5rem; font-weight:bold;"><span id="final-correct">0</span> ข้อ</div>
-            </div>
+        <h1>🏆 สรุปผลการเล่น</h1>
+        <div style="font-size: 1.5rem; margin: 20px 0;">
+            เงินรางวัลสะสมทั้งหมด: <br>
+            <span style="font-size: 3rem; color: var(--warning); font-weight: bold;" id="final-money">0</span> ฿
         </div>
-        <p id="rank-msg" style="color:#7f8c8d;"></p>
-        <button class="next-btn" style="background:var(--success)" onclick="location.reload()">เริ่มเกมใหม่</button>
+        <p>ตอบถูกทั้งหมด: <span id="final-correct">0</span> ข้อ</p>
+        <button class="next-btn" onclick="location.reload()">เล่นใหม่อีกครั้ง</button>
     </div>
 </div>
 
 <script>
-    // คลังโจทย์ 40 ข้อ พร้อมเฉลยและคำอธิบาย
+    // คลังโจทย์ 40 ข้อ (ตัวอย่าง 10 ข้อหลัก + ระบบเติมข้อว่างให้ครบ)
     const questionsPool = [
-        {q: "มีที่ดิน 8 แปลง เลือกซื้อ 3 แปลงพร้อมกัน จะเลือกได้กี่วิธี?", a: ["56 วิธี", "336 วิธี", "24 วิธี"], c: 0, r: 50, t: "การจัดหมู่", msg: "ใช้สูตร C(8,3) = (8x7x6)/(3x2x1) = 56 เพราะเลือกพร้อมกันไม่สนลำดับ"},
-        {q: "ผู้เล่น 6 คน เลือกประธานและรองประธาน จะเลือกได้กี่วิธี?", a: ["15 วิธี", "30 วิธี", "36 วิธี"], c: 1, r: 50, t: "การเรียงสับเปลี่ยน", msg: "ใช้ P(6,2) = 6x5 = 30 เพราะตำแหน่งต่างกันลำดับจึงสำคัญ"},
-        {q: "ทอยลูกเต๋า 2 ลูก ความน่าจะเป็นที่แต้มรวมเป็น 7?", a: ["1/6", "1/12", "1/36"], c: 0, r: 50, t: "ความน่าจะเป็น", msg: "ผลรวม 7 มี 6 แบบคือ (1,6),(6,1),(2,5),(5,2),(3,4),(4,3) จากทั้งหมด 36 แบบ"},
-        {q: "สลับอักษรคำว่า 'LUCKY' ได้กี่วิธี?", a: ["60 วิธี", "120 วิธี", "24 วิธี"], c: 1, r: 50, t: "แฟกทอเรียล", msg: "มีอักษร 5 ตัวต่างกันหมด เรียงสลับเปลี่ยนได้ 5! = 120"},
-        {q: "หยิบไพ่ 1 ใบ ความน่าจะเป็นที่ได้แต้ม 'A'?", a: ["1/52", "4/52", "13/52"], c: 1, r: 50, t: "ความน่าจะเป็น", msg: "ไพ่สำรับหนึ่งมี A ทั้งหมด 4 ใบ (4 ดอก) จากทั้งหมด 52 ใบ"},
-        {q: "จัดคน 5 คนนั่งล้อมวงกลม ได้กี่วิธี?", a: ["120 วิธี", "24 วิธี", "60 วิธี"], c: 1, r: 100, t: "วงกลม", msg: "สูตรวงกลม (n-1)! จะได้ (5-1)! = 4! = 24 วิธี"},
-        {q: "คำว่า 'MOON' สลับอักษรได้กี่วิธี?", a: ["24 วิธี", "12 วิธี", "6 วิธี"], c: 1, r: 100, t: "ของซ้ำ", msg: "มีอักษร 4 ตัว ซ้ำ 2 ตัว (O) จะได้ 4!/2! = 12 วิธี"},
-        {q: "เลือกซื้อของ 2 อย่างจาก 5 อย่าง ได้กี่วิธี?", a: ["10 วิธี", "20 วิธี", "25 วิธี"], c: 0, r: 50, t: "การจัดหมู่", msg: "ใช้ C(5,2) = (5x4)/2 = 10 วิธี"},
-        {q: "ความน่าจะเป็นที่ลูกเต๋า 1 ลูกจะออกแต้มคู่?", a: ["1/2", "1/3", "1/6"], c: 0, r: 50, t: "ความน่าจะเป็น", msg: "แต้มคู่คือ {2, 4, 6} มี 3 แบบ จากทั้งหมด 6 แบบ"},
-        {q: "สร้างเลข 2 หลักจาก {1,2,3} โดยไม่ซ้ำเลขได้กี่จำนวน?", a: ["3", "6", "9"], c: 1, r: 50, t: "การเรียงสับเปลี่ยน", msg: "หลักแรกเลือกได้ 3 หลักที่สองเลือกได้ 2 (ห้ามซ้ำ) = 3x2 = 6"},
-        // (เพิ่มโจทย์ให้ครบ 40 ข้อในชุดเดียวกัน)
+        {q: "มีที่ดิน 8 แปลง เลือกซื้อ 3 แปลงพร้อมกัน จะเลือกได้กี่วิธี?", a: ["56 วิธี", "336 วิธี", "24 วิธี"], c: 0, r: 50, msg: "ใช้สูตร C(8,3) = (8x7x6)/(3x2x1) = 56 เพราะเลือกพร้อมกันไม่สนใจลำดับ"},
+        {q: "ผู้เล่น 6 คน เลือกประธานและรองประธาน จะเลือกได้กี่วิธี?", a: ["15 วิธี", "30 วิธี", "36 วิธี"], c: 1, r: 50, msg: "ใช้ P(6,2) = 6x5 = 30 เพราะตำแหน่งต่างกัน ลำดับจึงสำคัญ"},
+        {q: "ทอยลูกเต๋า 2 ลูก ความน่าจะเป็นที่แต้มรวมเป็น 7?", a: ["1/6", "1/12", "1/36"], c: 0, r: 50, msg: "ผลรวม 7 มี 6 แบบคือ (1,6),(6,1),(2,5),(5,2),(3,4),(4,3) จากทั้งหมด 36 แบบ"},
+        {q: "จัดคน 5 คนนั่งล้อมวงกลม ได้กี่วิธี?", a: ["120 วิธี", "24 วิธี", "60 วิธี"], c: 1, r: 100, msg: "ใช้สูตร (n-1)! จะได้ (5-1)! = 4! = 24 วิธี"},
+        {q: "คำว่า 'MOON' สลับอักษรได้กี่วิธี?", a: ["24 วิธี", "12 วิธี", "6 วิธี"], c: 1, r: 100, msg: "มีอักษร 4 ตัว ซ้ำ 2 ตัว (O) จะได้ 4! / 2! = 12 วิธี"},
+        {q: "โยนเหรียญ 3 อันพร้อมกัน ความน่าจะเป็นที่ออกหัวทั้งหมด?", a: ["1/2", "1/4", "1/8"], c: 2, r: 100, msg: "ผลลัพธ์ทั้งหมดมี 8 แบบ (2^3) ออกหัวหมด {HHH} มีแค่ 1 แบบ"},
+        {q: "เลือกซื้อของ 2 อย่างจาก 5 อย่างที่ต่างกัน ได้กี่วิธี?", a: ["10 วิธี", "20 วิธี", "25 วิธี"], c: 0, r: 50, msg: "ใช้ C(5,2) = (5x4)/2 = 10 วิธี"},
+        {q: "สลับอักษรคำว่า 'LUCKY' ได้กี่วิธี?", a: ["120 วิธี", "60 วิธี", "24 วิธี"], c: 0, r: 50, msg: "อักษรต่างกัน 5 ตัว เรียงสับเปลี่ยนได้ 5! = 120 วิธี"},
+        {q: "ทอยลูกเต๋า 1 ลูก ความน่าจะเป็นที่ได้แต้มมากกว่า 4?", a: ["1/3", "1/2", "1/6"], c: 0, r: 50, msg: "แต้มที่มากกว่า 4 คือ {5, 6} มี 2 แบบ จาก 6 แบบ ตัดทอนได้ 1/3"},
+        {q: "มีเลข 1-10 สุ่มหยิบ 1 ใบ ความน่าจะเป็นที่ได้เลขคี่?", a: ["5/10", "1/10", "3/10"], c: 0, r: 50, msg: "เลขคี่คือ {1,3,5,7,9} มี 5 ใบ จากทั้งหมด 10 ใบ"}
     ];
 
-    // เพิ่มโจทย์สมมติให้ครบ 40 เพื่อการทดสอบ (คุณสามารถเปลี่ยนเป็นโจทย์จริงได้)
+    // เติมโจทย์จำลองให้ครบ 40 ข้อ (คุณสามารถเปลี่ยนเนื้อหาได้)
     for(let i=11; i<=40; i++) {
         questionsPool.push({
-            q: `โจทย์ความน่าจะเป็นข้อที่ ${i}: สุ่มเหตุการณ์ในเกมเศรษฐี...`,
-            a: ["คำตอบที่ถูกต้อง", "คำตอบหลอก 1", "คำตอบหลอก 2"],
-            c: 0, r: i > 30 ? 100 : 50, t: "ระดับทั่วไป", msg: "วิเคราะห์ตามหลักการนับเบื้องต้น"
+            q: `โจทย์ความน่าจะเป็นข้อที่ ${i}: เกี่ยวกับการสุ่มตัวอย่างในเกมเศรษฐี`,
+            a: ["คำตอบที่ถูก", "คำตอบผิด 1", "คำตอบผิด 2"],
+            c: 0, r: 50, msg: "วิเคราะห์โดยใช้หลักการนับเบื้องต้นและการหารพื้นที่เหตุการณ์"
         });
     }
 
@@ -106,63 +90,56 @@
     let shuffledQuestions = [];
 
     function initGame() {
-        // Shuffle อัลกอริทึม Fisher-Yates ให้ทุกคนได้ลำดับไม่ซ้ำกัน
-        shuffledQuestions = [...questionsPool];
-        for (let i = shuffledQuestions.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [shuffledQuestions[i], shuffledQuestions[j]] = [shuffledQuestions[j], shuffledQuestions[i]];
-        }
-        showQuestion();
+        // สุ่มลำดับโจทย์ให้แต่ละคนไม่ซ้ำกัน
+        shuffledQuestions = [...questionsPool].sort(() => Math.random() - 0.5);
+        renderQuestion();
     }
 
-    function showQuestion() {
+    function renderQuestion() {
         const qData = shuffledQuestions[currentIdx];
         document.getElementById('overlay').style.display = 'none';
         document.getElementById('current-num').innerText = currentIdx + 1;
-        document.getElementById('q-category').innerText = `หมวด: ${qData.t} (รางวัล ${qData.r} ฿)`;
         document.getElementById('q-text').innerText = qData.q;
         
         const container = document.getElementById('options-container');
         container.innerHTML = '';
-        qData.a.forEach((opt, i) => {
+        qData.a.forEach((option, i) => {
             const btn = document.createElement('button');
             btn.className = 'option-btn';
-            btn.innerText = opt;
+            btn.innerText = option;
             btn.onclick = () => checkAnswer(i);
             container.appendChild(btn);
         });
     }
 
-    function checkAnswer(idx) {
+    function checkAnswer(userChoice) {
         const qData = shuffledQuestions[currentIdx];
-        const isCorrect = idx === qData.c;
+        const isCorrect = userChoice === qData.c;
         const overlay = document.getElementById('overlay');
-        
-        if(isCorrect) {
+
+        if (isCorrect) {
             totalMoney += qData.r;
             correctCount++;
             document.getElementById('status-icon').innerText = "✅";
-            document.getElementById('status-title').innerText = "เก่งมาก!";
+            document.getElementById('status-title').innerText = "ถูกต้อง!";
             document.getElementById('status-title').style.color = "var(--success)";
-            document.getElementById('status-desc').innerText = `รับเงินรางวัล ${qData.r} ฿ เข้ากระเป๋า`;
-            document.getElementById('explanation-area').style.display = 'none';
+            document.getElementById('money-info').innerText = `+ ${qData.r} ฿`;
         } else {
             document.getElementById('status-icon').innerText = "❌";
-            document.getElementById('status-title').innerText = "พลาดไปนิด!";
+            document.getElementById('status-title').innerText = "เกือบถูกแล้ว";
             document.getElementById('status-title').style.color = "var(--danger)";
-            document.getElementById('status-desc').innerText = `เฉลยคือ: ${qData.a[qData.c]}`;
-            document.getElementById('q-explanation').innerText = qData.msg;
-            document.getElementById('explanation-area').style.display = 'block';
+            document.getElementById('money-info').innerText = `+ 0 ฿`;
         }
-        
+
+        document.getElementById('q-explanation').innerText = qData.msg;
         document.getElementById('balance').innerText = totalMoney;
         overlay.style.display = 'flex';
     }
 
     function nextQuestion() {
         currentIdx++;
-        if(currentIdx < shuffledQuestions.length) {
-            showQuestion();
+        if (currentIdx < shuffledQuestions.length) {
+            renderQuestion();
         } else {
             finishGame();
         }
@@ -174,12 +151,10 @@
         document.getElementById('result-screen').style.display = 'block';
         document.getElementById('final-money').innerText = totalMoney;
         document.getElementById('final-correct').innerText = correctCount;
-        
-        const msg = totalMoney > 1000 ? "คุณคือมหาเศรษฐีตัวจริง!" : "พยายามอีกนิด โอกาสรวยอยู่ไม่ไกล";
-        document.getElementById('rank-msg').innerText = msg;
     }
 
     initGame();
 </script>
+
 </body>
 </html>
